@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import useTableItems from './store';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
-function App() {
+function InfoTable({ type }: any) {
   const [filter, setFilter] = useState('');
   const [total, setTotal] = useState(0);
 
@@ -16,9 +16,11 @@ function App() {
   const toggleItem = useTableItems(state => state.toggleItem);
 
   useEffect(() => {
-    getUserInfo();
+    if (type === 'user') {
+      getUserInfo();
+    }
     loadItems(filter);
-  }, [filter]);
+  }, [filter, type]);
 
   useEffect(() => {
     items.forEach(item => {
@@ -53,7 +55,6 @@ function App() {
     }
   };
 
-  console.log('render');
 
   return (
     <>
@@ -108,4 +109,4 @@ function App() {
   );
 }
 
-export default App;
+export default InfoTable;
