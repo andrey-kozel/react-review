@@ -8,27 +8,31 @@ import ItemsService from './service';
 export interface Table {
   loading: boolean;
   items: Array<any>;
-  filter: string;
+  userInfo: any;
 
-  loadItems: (size?: number, page?: number) => Promise<void>;
-  appendItems: (size?: number, page?: number) => Promise<void>;
+  getUserInfo: () => Promise<void>;
+  loadItems: (filter: string, size?: number, page?: number) => Promise<void>;
+  appendItems: (filter: string, size?: number, page?: number) => Promise<void>;
   toggleItem: (id: number, checked: boolean) => void;
-  setFilter: (filter: string) => void;
 }
 
-const initialState: Omit<Table, 'loadItems' | 'setFilter' | 'appendItems' | 'toggleItem'> = {
+const initialState: Omit<Table, 'loadItems' | 'setFilter' | 'appendItems' | 'toggleItem' | 'getUserInfo'> = {
+  userInfo: {},
   loading: true,
-  filter: '',
   items: []
 };
 
 const useTableItems = create<Table>((set: any, get: any) => ({
   ...initialState,
 
-  loadItems: async (size?: number, page?: number) => {
+  getUserInfo: async () => {
+    const userInfo: any = await ItemsService.getUserInfo();
+    set({ userInfo });
+  },
+
+  loadItems: async (filter: string, size?: number, page?: number) => {
     try {
       set({ loading: true });
-      const filter = get().filter;
       const items = await ItemsService.getItems(filter, size, page);
       set({ items });
     } finally {
@@ -36,10 +40,9 @@ const useTableItems = create<Table>((set: any, get: any) => ({
     }
   },
 
-  appendItems: async (size?: number, page?: number) => {
+  appendItems: async (filter: string, size?: number, page?: number) => {
     try {
       set({ loading: true });
-      const filter = get().filter;
       const existingItems = get().items;
       const items = await ItemsService.getItems(filter, size, page);
       set({ items: [...existingItems, ...items] });
@@ -53,11 +56,7 @@ const useTableItems = create<Table>((set: any, get: any) => ({
     items
       .filter((item: any) => item.id === id)
       .forEach((item: any) => item.checked = !checked);
-    set({ items });
-  },
-
-  setFilter: (filter: string) => {
-    set({ filter });
+    set({ items: [...items] });
   }
 
 }));
